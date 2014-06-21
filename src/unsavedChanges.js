@@ -2,7 +2,7 @@
 /*jshint globalstrict: true*/
 /*jshint undef:false */
 
-angular.module('unsavedChanges', ['resettable'])
+angular.module('unsavedChanges', ['resettable','pascalprecht.translate', 'ui.bootstrap', 'dialogs.main'])
 
 .provider('unsavedWarningsConfig', function() {
 
@@ -121,8 +121,8 @@ angular.module('unsavedChanges', ['resettable'])
     ];
 })
 
-.service('unsavedWarningSharedService', ['$rootScope', 'unsavedWarningsConfig', '$injector',
-    function($rootScope, unsavedWarningsConfig, $injector) {
+.service('unsavedWarningSharedService', ['$rootScope', 'unsavedWarningsConfig', '$injector', 'dialogs',
+    function($rootScope, unsavedWarningsConfig, $injector, dialogs) {
 
         // Controller scopped variables
         var _this = this;
@@ -208,13 +208,21 @@ angular.module('unsavedChanges', ['resettable'])
                     // @todo this could be written a lot cleaner! 
                     if (!allFormsClean()) {
                         unsavedWarningsConfig.log("a form is dirty");
-                        if (!confirm(messages.navigate)) {
+                        var dlg = dialogs.confirm('Unsaved Data?', messages.navigate);
+                        dlg.result.then(function(btn){
                             unsavedWarningsConfig.log("user wants to cancel leaving");
                             event.preventDefault(); // user clicks cancel, wants to stay on page 
-                        } else {
+                        }, function(btn){
                             unsavedWarningsConfig.log("user doesn't care about loosing stuff");
                             $rootScope.$broadcast('resetResettables');
-                        }
+                        });
+                        // if (!confirm(messages.navigate)) {
+                        //     unsavedWarningsConfig.log("user wants to cancel leaving");
+                        //     event.preventDefault(); // user clicks cancel, wants to stay on page 
+                        // } else {
+                        //     unsavedWarningsConfig.log("user doesn't care about loosing stuff");
+                        //     $rootScope.$broadcast('resetResettables');
+                        // }
                     } else {
                         unsavedWarningsConfig.log("all forms are clean");
                     }
